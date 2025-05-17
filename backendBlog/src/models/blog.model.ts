@@ -1,7 +1,7 @@
 import mongoose, { Schema, type Document } from 'mongoose';
 
 export interface IBlog extends Document {
-    author: mongoose.Types.ObjectId;
+    userId: mongoose.Types.ObjectId;
     title: string;
     content: string;
     tags: string[];
@@ -12,7 +12,7 @@ export interface IBlog extends Document {
 
 const BlogSchema = new Schema<IBlog>(
     {
-        author: {
+        userId: {
             type: Schema.Types.ObjectId,
             ref: 'User',
             required: true,

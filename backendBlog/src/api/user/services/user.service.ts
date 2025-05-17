@@ -1,6 +1,9 @@
 import { ILoginUser, IRegisterUser } from '../interfaces';
 import User from '../../../models/user.model'; // Update the path if different
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your jwt token';
 
 class UserService {
     async registerUser(data: IRegisterUser) {
@@ -33,8 +36,18 @@ class UserService {
         if (!isPasswordValid) {
             throw new Error('Invalid password');
         }
+        const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
+            expiresIn: '7d',
+        });
 
-        return user;
+        return {
+            token,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+            },
+        };
     }
 }
 

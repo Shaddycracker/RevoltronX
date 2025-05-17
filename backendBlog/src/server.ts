@@ -21,8 +21,10 @@ app.use(cors());
 app.use(joiErrorHandler);
 app.use(customErrorHandler);
 import AuthRoutes from './routes/user.routes';
+import BlogRoutes from './routes/blog.routes';
 
-app.use('/users', AuthRoutes);
+app.use('/api/auth', AuthRoutes);
+app.use('/api/blog', BlogRoutes);
 
 app.listen(port, async () => {
     await mongooseConnect();

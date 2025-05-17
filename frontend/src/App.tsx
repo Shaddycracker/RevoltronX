@@ -10,25 +10,27 @@ import { ToastContainer } from "./components/ToastContainer"
 import { useToast } from "./hooks/useToast"
 import { theme } from "./theme"
 import type { Blog } from "./types"
-
+import { useUser } from "./hooks/useUser";
 function App() {
-    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false)
-    const [loading, setLoading] = useState<boolean>(true)
+    // const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false)
+    // const [Loading, setLoading] = useState<boolean>(true)
     const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null)
     const { showToast } = useToast()
+    const { user, isAuthenticated ,setUser,setIsAuthenticated,setLoading,Loading } = useUser();
 
     useEffect(() => {
         // Check if user is logged in
         const token = localStorage.getItem("token")
         if (token) {
-            setIsLoggedIn(true)
+            setIsAuthenticated(true)
         }
         setLoading(false)
     }, [])
 
     const handleLogout = () => {
         localStorage.removeItem("token")
-        setIsLoggedIn(false)
+        setIsAuthenticated(false)
+        setUser(null)
         showToast("Logged out successfully", "success")
     }
 
@@ -40,7 +42,7 @@ function App() {
         setSelectedBlog(null)
     }
 
-    if (loading) {
+    if (Loading) {
         return (
             <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
                 <CircularProgress />
@@ -56,15 +58,18 @@ function App() {
                         <Typography variant="h4" component="h1" gutterBottom>
                             Blog Editor
                         </Typography>
-                        {isLoggedIn && (
+                        <Typography variant="h4" component="h1" gutterBottom>
+                            {user?.email}
+                        </Typography>
+                        {isAuthenticated && (
                             <Button variant="outlined" color="primary" onClick={handleLogout}>
                                 Logout
                             </Button>
                         )}
                     </Box>
 
-                    {!isLoggedIn ? (
-                        <LoginForm onLoginSuccess={() => setIsLoggedIn(true)} />
+                    {!isAuthenticated ? (
+                        <LoginForm onLoginSuccess={() => setIsAuthenticated(true)} />
                     ) : (
                         <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 4 }}>
                             <Box sx={{ flex: 1 }}>

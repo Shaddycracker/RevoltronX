@@ -6,6 +6,7 @@ import { useState } from "react"
 import { Box, TextField, Button, Paper, CircularProgress, Tabs, Tab } from "@mui/material"
 import { useToast } from "../hooks/useToast"
 import { login, register } from "../api/authApi"
+import {useUser} from "../hooks/useUser"
 
 interface TabPanelProps {
     children?: React.ReactNode
@@ -38,10 +39,13 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [name, setName] = useState("")
-    const [loading, setLoading] = useState(false)
     const { showToast } = useToast()
+    const {setUser,setIsAuthenticated,Loading,setLoading} = useUser()
 
     const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+        setEmail("")
+        setName("")
+        setPassword("")
         setTabValue(newValue)
     }
 
@@ -56,7 +60,10 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
         try {
             setLoading(true)
             const data = await login({ email, password })
-            localStorage.setItem("token", data.token)
+            localStorage.setItem("token", data.data.token)
+            console.log("token after login ",)
+            setUser(data.data.user)
+            setIsAuthenticated(true)
             showToast("Logged in successfully", "success")
             onLoginSuccess()
         } catch (error) {
@@ -124,8 +131,8 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
-                    <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }} disabled={loading}>
-                        {loading ? <CircularProgress size={24} /> : "Sign In"}
+                    <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }} disabled={Loading}>
+                        {Loading ? <CircularProgress size={24} /> : "Sign In"}
                     </Button>
                 </Box>
             </TabPanel>
@@ -167,8 +174,8 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
-                    <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }} disabled={loading}>
-                        {loading ? <CircularProgress size={24} /> : "Register"}
+                    <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }} disabled={Loading}>
+                        {Loading ? <CircularProgress size={24} /> : "Register"}
                     </Button>
                 </Box>
             </TabPanel>

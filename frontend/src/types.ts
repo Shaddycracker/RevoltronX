@@ -1,5 +1,6 @@
 export interface Blog {
     _id: string
+    author: string
     title: string
     content: string
     tags: string[]
@@ -9,7 +10,19 @@ export interface Blog {
 }
 
 export interface User {
-    _id: string
+    id: string
     name: string
     email: string
+}
+
+export interface LoginResponse {
+    message: string,
+    data: {
+        token: string,
+        user: {
+            id: string;
+            name: string;
+            email: string;
+        };
+    };
 }
