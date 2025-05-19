@@ -11,6 +11,7 @@ import PublishedBlogsPage from "./pages/PublishedBlogsPage"
 import DraftBlogsPage from "./pages/DraftBlogsPage"
 import Layout from "./components/Layout.tsx"
 import {isVerify} from "./api/authApi.ts";
+import BlogViewPage from "./pages/BlogViewPage.tsx";
 
 function App() {
     const {setUser,isAuthenticated, setIsAuthenticated, setLoading, Loading} = useUser()
@@ -65,6 +66,7 @@ function App() {
                             <Route path="blog/:id" element={<EditBlogPage/>}/>
                             <Route path="published" element={<PublishedBlogsPage/>}/>
                             <Route path="drafts" element={<DraftBlogsPage/>}/>
+                            <Route path="view/:id" element={<BlogViewPage />}/>
                         </Route>
                         <Route path="*" element={<Navigate to="/" replace/>}/>
                     </Routes>

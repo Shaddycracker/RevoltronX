@@ -7,7 +7,7 @@ export default function CreateBlogPage() {
             <Typography variant="h5" component="h1" gutterBottom>
                 Create New Blog
             </Typography>
-            <BlogEditor blog={null} autoSaveInterval={600000} /> {/* 10 minutes = 600000 ms */}
+            <BlogEditor blog={null} autoSaveInterval={6000} /> {/* 10 minutes = 600000 ms */}
         </Box>
     )
 }

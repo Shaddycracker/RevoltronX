@@ -52,7 +52,7 @@ export default function EditBlogPage() {
                     Edit Blog
                 </Typography>
             </Box>
-            {blog && <BlogEditor blog={blog} autoSaveInterval={600000} />} {/* 10 minutes = 600000 ms */}
+            {blog && <BlogEditor blog={blog} autoSaveInterval={5000} />}
         </Box>
     )
 }

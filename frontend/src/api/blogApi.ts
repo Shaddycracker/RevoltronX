@@ -12,6 +12,10 @@ export async function getBlogById(id: string): Promise<Blog> {
     const response = await authFetch(`${API_URL}/api/blog/${id}`)
     return handleResponse<Blog>(response)
 }
+export async function viewBlogById(id: string): Promise<Blog> {
+    const response = await authFetch(`${API_URL}/api/blog/view/${id}`)
+    return handleResponse<Blog>(response)
+}
 
 export async function saveDraft(blogData: Partial<Blog>): Promise<Blog> {
     const response = await authFetch(`${API_URL}/api/blog/save-draft`, {

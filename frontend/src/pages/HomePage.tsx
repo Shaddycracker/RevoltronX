@@ -21,7 +21,7 @@ export default function HomePage() {
         try {
             setLoading(true)
             const data = await getBlogs()
-            setBlogs(data)
+            setBlogs(data.filter((blog)=>blog.status==="published"))
         } catch (error) {
             console.error("Error fetching blogs:", error)
             showToast("Failed to load blogs", "error")
@@ -76,10 +76,11 @@ export default function HomePage() {
                                 flex: "1 1 calc(33.333% - 24px)",
                                 minWidth: "280px",
                                 boxSizing: "border-box",
+                                cursor:'pointer',
                             }}
                         >
                             <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
-                                <CardContent sx={{ flexGrow: 1 }}>
+                                <CardContent sx={{ flexGrow: 1 }} onClick={()=>navigate(`/view/${blog._id}`)}>
                                     <Typography variant="h6" component="h2" gutterBottom>
                                         {blog.title}
                                     </Typography>
@@ -95,7 +96,7 @@ export default function HomePage() {
                                         ))}
                                     </Box>
                                 </CardContent>
-                                {user && user.id==blog.userId && <CardActions>
+                                {user && user.id==blog.userId && <CardActions sx={{zIndex:50}}>
                                     <Button size="small" onClick={() => handleEdit(blog._id)}>
                                         Edit
                                     </Button>

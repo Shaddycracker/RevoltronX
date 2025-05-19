@@ -59,7 +59,7 @@ export default function PublishedBlogsPage() {
 
             {blogs.length === 0 ? (
                 <Typography variant="body1" sx={{ textAlign: "center", my: 4 }}>
-                    No published blogs found.
+                    you don't have published blogs.
                 </Typography>
             ) : (
                 <Box

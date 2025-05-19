@@ -1,26 +1,22 @@
-"use client"
-
-import { useState, useEffect, useCallback } from "react"
-import { Box, TextField, Button, Paper, Typography, Chip, Stack, CircularProgress } from "@mui/material"
-import debounce from "lodash.debounce"
-import { useToast } from "../hooks/useToast"
-import { saveDraft, publishBlog } from "../api/blogApi"
-import type { Blog } from "../types"
-import { useNavigate } from "react-router-dom"
+import {useState, useEffect} from "react"
+import {Box, TextField, Button, Paper, Typography, Chip, Stack, CircularProgress} from "@mui/material"
+import {useToast} from "../hooks/useToast"
+import {saveDraft, publishBlog} from "../api/blogApi"
+import type {Blog} from "../types"
+import {useNavigate} from "react-router-dom"
 
 interface BlogEditorProps {
     blog?: Blog | null
     autoSaveInterval?: number
 }
 
-export default function BlogEditor({ blog, autoSaveInterval = 5000 }: BlogEditorProps) {
+export default function BlogEditor({blog,autoSaveInterval=5000}: BlogEditorProps) {
     const [title, setTitle] = useState("")
     const [content, setContent] = useState("")
     const [tags, setTags] = useState("")
     const [saving, setSaving] = useState(false)
     const [publishing, setPublishing] = useState(false)
-    const [blogId, setBlogId] = useState<string | null>(null)
-    const { showToast } = useToast()
+    const {showToast} = useToast()
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -28,60 +24,56 @@ export default function BlogEditor({ blog, autoSaveInterval = 5000 }: BlogEditor
             setTitle(blog.title)
             setContent(blog.content)
             setTags(blog.tags.join(", "))
-            setBlogId(blog._id)
         } else {
             setTitle("")
             setContent("")
             setTags("")
-            setBlogId(null)
         }
     }, [blog])
 
-    // Auto-save functionality with debounce
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const debouncedSave = useCallback(
-        debounce(async (blogData: Partial<Blog>) => {
-            if (!title && !content) return
-
-            try {
-                setSaving(true)
-                const response = await saveDraft(blogData)
-                if (response._id && !blogId) {
-                    setBlogId(response._id)
-                }
-                showToast("Draft saved automatically", "success")
-            } catch (error) {
-                showToast("Failed to save draft", "error")
-                console.error("Auto-save error:", error)
-            } finally {
-                setSaving(false)
-            }
-        }, autoSaveInterval), // Use the provided autoSaveInterval
-        [blogId],
-    )
-
     useEffect(() => {
-        if (title || content) {
-            const blogData: Partial<Blog> = {
-                title,
-                content,
-                tags: tags
-                    .split(",")
-                    .map((tag) => tag.trim())
-                    .filter((tag) => tag),
-            }
+        if (!title && !content) return; // Exit early if nothing to save
 
-            if (blogId) {
-                blogData._id = blogId
-            }
+        const timeout = setTimeout(async () => {
+            try {
 
-            debouncedSave(blogData)
-        }
+                if(blog && blog?._id) {
+                    const blogData: Partial<Blog> = {
+                        _id: blog._id,
+                        title,
+                        content,
+                        tags: tags
+                            .split(",")
+                            .map((tag) => tag.trim())
+                            .filter((tag) => tag !== ""),
+                    };
+                     await saveDraft(blogData);
+
+                }else{
+                    const blogData2: Partial<Blog> = {
+                        title,
+                        content,
+                        tags: tags
+                            .split(",")
+                            .map((tag) => tag.trim())
+                            .filter((tag) => tag !== ""),
+                    };
+                    await saveDraft(blogData2);
+
+                }
+                showToast("Draft saved automatically", "success");
+            } catch (error) {
+                console.error("Auto-save failed", error);
+                showToast("Failed to auto-save draft", "error");
+            } finally {
+                setSaving(false);
+            }
+        },autoSaveInterval);
 
         return () => {
-            debouncedSave.cancel()
-        }
-    }, [title, content, tags, blogId, debouncedSave])
+            clearTimeout(timeout); // Cancel previous timeout on title/content change
+        };
+    }, [title, content, tags]);
 
     const handleSaveDraft = async () => {
         if (!title && !content) {
@@ -90,7 +82,6 @@ export default function BlogEditor({ blog, autoSaveInterval = 5000 }: BlogEditor
         }
 
         try {
-            setSaving(true)
             const blogData: Partial<Blog> = {
                 title,
                 content,
@@ -99,21 +90,12 @@ export default function BlogEditor({ blog, autoSaveInterval = 5000 }: BlogEditor
                     .map((tag) => tag.trim())
                     .filter((tag) => tag),
             }
+            await saveDraft(blogData)
 
-            if (blogId) {
-                blogData._id = blogId
-            }
-
-            const response = await saveDraft(blogData)
-            if (response._id && !blogId) {
-                setBlogId(response._id)
-            }
             showToast("Draft saved successfully", "success")
         } catch (error) {
             showToast("Failed to save draft", "error")
             console.error("Save draft error:", error)
-        } finally {
-            setSaving(false)
         }
     }
 
@@ -138,24 +120,15 @@ export default function BlogEditor({ blog, autoSaveInterval = 5000 }: BlogEditor
                     .map((tag) => tag.trim())
                     .filter((tag) => tag),
             }
-
-            if (blogId) {
-                blogData._id = blogId
-            }
-
-            const publishedBlog = await publishBlog(blogData)
+            await publishBlog(blogData)
             showToast("Blog published successfully", "success")
 
             // Reset form if it's a new blog and navigate to the published blog
-            if (!blog) {
+
                 setTitle("")
                 setContent("")
                 setTags("")
-                setBlogId(null)
                 navigate("/published")
-            } else {
-                navigate(`/blog/${publishedBlog._id}`)
-            }
         } catch (error) {
             showToast("Failed to publish blog", "error")
             console.error("Publish error:", error)
@@ -165,8 +138,8 @@ export default function BlogEditor({ blog, autoSaveInterval = 5000 }: BlogEditor
     }
 
     return (
-        <Paper elevation={2} sx={{ p: 3 }}>
-            <Box component="form" noValidate autoComplete="off" sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        <Paper elevation={2} sx={{p: 3}}>
+            <Box component="form" noValidate autoComplete="off" sx={{display: "flex", flexDirection: "column", gap: 3}}>
                 <TextField
                     label="Title"
                     variant="outlined"
@@ -198,23 +171,24 @@ export default function BlogEditor({ blog, autoSaveInterval = 5000 }: BlogEditor
                 />
 
                 {tags && (
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                    <Box sx={{display: "flex", flexWrap: "wrap", gap: 1}}>
                         {tags
                             .split(",")
                             .map(
                                 (tag, index) =>
-                                    tag.trim() && <Chip key={index} label={tag.trim()} size="small" color="primary" variant="outlined" />,
+                                    tag.trim() && <Chip key={index} label={tag.trim()} size="small" color="primary"
+                                                        variant="outlined"/>,
                             )}
                     </Box>
                 )}
 
-                <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+                <Stack direction="row" spacing={2} sx={{mt: 2}}>
                     <Button
                         variant="outlined"
                         color="primary"
                         onClick={handleSaveDraft}
                         disabled={saving || publishing}
-                        startIcon={saving && <CircularProgress size={20} />}
+                        startIcon={saving && <CircularProgress size={20}/>}
                     >
                         {saving ? "Saving..." : "Save as Draft"}
                     </Button>
@@ -224,7 +198,7 @@ export default function BlogEditor({ blog, autoSaveInterval = 5000 }: BlogEditor
                         color="primary"
                         onClick={handlePublish}
                         disabled={saving || publishing}
-                        startIcon={publishing && <CircularProgress size={20} />}
+                        startIcon={publishing && <CircularProgress size={20}/>}
                     >
                         {publishing ? "Publishing..." : "Publish"}
                     </Button>

@@ -17,7 +17,7 @@ export const getUserBlogs = async (req: AuthRequest, res: Response) => {
 
 export const getAllPublicBlogs = async (req: AuthRequest, res: Response) => {
     try {
-        const blogs = await Blog.find({ status: 'published' }).sort({ updatedAt: -1 });
+        const blogs = await Blog.find().sort({ updatedAt: -1 });
         res.status(200).json(blogs);
     } catch (error) {
         console.error('Get blogs error:', error);
@@ -31,6 +31,23 @@ export const getBlogById = async (req: AuthRequest, res: Response) => {
         const { id } = req.params;
 
         const blog = await Blog.findOne({ _id: id, userId });
+
+        if (!blog) {
+            return res.status(404).json({ message: 'Blog not found' });
+        }
+
+        res.status(200).json(blog);
+    } catch (error) {
+        console.error('Get blog error:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+export const getPublicBlogs = async (req: AuthRequest, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        const blog = await Blog.findOne({ _id: id });
 
         if (!blog) {
             return res.status(404).json({ message: 'Blog not found' });

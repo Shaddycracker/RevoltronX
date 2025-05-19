@@ -1,7 +1,16 @@
 import { useState, useEffect } from "react"
-import { Typography, Box, Grid, Card, CardContent, CardActions, Button, Chip, CircularProgress } from "@mui/material"
+import {
+    Typography,
+    Box,
+    Card,
+    CardContent,
+    CardActions,
+    Button,
+    Chip,
+    CircularProgress,
+} from "@mui/material"
 import { useNavigate } from "react-router-dom"
-import { getBlogs, deleteBlog } from "../api/blogApi"
+import { deleteBlog, userBlogs} from "../api/blogApi"
 import { useToast } from "../hooks/useToast"
 import type { Blog } from "../types"
 
@@ -18,7 +27,7 @@ export default function DraftBlogsPage() {
     const fetchDraftBlogs = async () => {
         try {
             setLoading(true)
-            const data = await getBlogs()
+            const data = await userBlogs()
             setBlogs(data.filter((blog) => blog.status === "draft"))
         } catch (error) {
             console.error("Error fetching blogs:", error)
@@ -62,9 +71,20 @@ export default function DraftBlogsPage() {
                     No drafts found.
                 </Typography>
             ) : (
-                <Grid container spacing={3}>
+                <Box
+                    sx={{
+                        display: "grid",
+                        gridTemplateColumns: {
+                            xs: "1fr",
+                            sm: "1fr 1fr",
+                            md: "1fr 1fr 1fr",
+                        },
+                        gap: 3,
+                        mt: 2,
+                    }}
+                >
                     {blogs.map((blog) => (
-                        <Grid item xs={12} sm={6} md={4} key={blog._id}>
+                        <Box key={blog._id}>
                             <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
                                 <CardContent sx={{ flexGrow: 1 }}>
                                     <Typography variant="h6" component="h2" gutterBottom>
@@ -74,7 +94,9 @@ export default function DraftBlogsPage() {
                                         Last edited: {new Date(blog.updatedAt).toLocaleDateString()}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                        {blog.content.length > 100 ? `${blog.content.substring(0, 100)}...` : blog.content}
+                                        {blog.content.length > 100
+                                            ? `${blog.content.substring(0, 100)}...`
+                                            : blog.content}
                                     </Typography>
                                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                                         {blog.tags.map((tag, index) => (
@@ -91,9 +113,9 @@ export default function DraftBlogsPage() {
                                     </Button>
                                 </CardActions>
                             </Card>
-                        </Grid>
+                        </Box>
                     ))}
-                </Grid>
+                </Box>
             )}
         </Box>
     )
