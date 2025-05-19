@@ -11,8 +11,9 @@ import {
 import { authenticate } from '../middleware/auth';
 
 const router = express.Router();
-
+// no need auth middleware
 router.get('/view/:id', getPublicBlogs);
+// middleware to get userId from token
 router.use(authenticate);
 
 router.get('/', getAllPublicBlogs);
