@@ -38,3 +38,7 @@ export async function deleteBlog(id: string): Promise<void> {
 
     return handleResponse<void>(response)
 }
+export async function userBlogs(): Promise<Blog[]>{
+    const response =await authFetch(`${API_URL}/api/blog/user/blog`)
+    return handleResponse<Blog[]>(response)
+}

@@ -6,12 +6,14 @@ import debounce from "lodash.debounce"
 import { useToast } from "../hooks/useToast"
 import { saveDraft, publishBlog } from "../api/blogApi"
 import type { Blog } from "../types"
+import { useNavigate } from "react-router-dom"
 
 interface BlogEditorProps {
     blog?: Blog | null
+    autoSaveInterval?: number
 }
 
-export default function BlogEditor({ blog }: BlogEditorProps) {
+export default function BlogEditor({ blog, autoSaveInterval = 5000 }: BlogEditorProps) {
     const [title, setTitle] = useState("")
     const [content, setContent] = useState("")
     const [tags, setTags] = useState("")
@@ -19,6 +21,7 @@ export default function BlogEditor({ blog }: BlogEditorProps) {
     const [publishing, setPublishing] = useState(false)
     const [blogId, setBlogId] = useState<string | null>(null)
     const { showToast } = useToast()
+    const navigate = useNavigate()
 
     useEffect(() => {
         if (blog) {
@@ -53,7 +56,7 @@ export default function BlogEditor({ blog }: BlogEditorProps) {
             } finally {
                 setSaving(false)
             }
-        }, 5000), // 5 seconds after user stops typing
+        }, autoSaveInterval), // Use the provided autoSaveInterval
         [blogId],
     )
 
@@ -140,15 +143,18 @@ export default function BlogEditor({ blog }: BlogEditorProps) {
                 blogData._id = blogId
             }
 
-            await publishBlog(blogData)
+            const publishedBlog = await publishBlog(blogData)
             showToast("Blog published successfully", "success")
 
-            // Reset form if it's a new blog
+            // Reset form if it's a new blog and navigate to the published blog
             if (!blog) {
                 setTitle("")
                 setContent("")
                 setTags("")
                 setBlogId(null)
+                navigate("/published")
+            } else {
+                navigate(`/blog/${publishedBlog._id}`)
             }
         } catch (error) {
             showToast("Failed to publish blog", "error")

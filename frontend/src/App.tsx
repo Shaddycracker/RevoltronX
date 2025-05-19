@@ -1,99 +1,84 @@
-"use client"
-
-import { useEffect, useState } from "react"
-import { Container, Box, Typography, Button, CircularProgress } from "@mui/material"
-import { ThemeProvider } from "@mui/material/styles"
-import BlogEditor from "./components/BlogEditor"
-import BlogList from "./components/BlogList"
+import {useEffect} from "react"
+import {Routes, Route, Navigate} from "react-router-dom"
+import { Box, CircularProgress} from "@mui/material"
+import {ToastContainer} from "./components/ToastContainer"
+import {useUser} from "./hooks/useUser"
 import LoginForm from "./components/LoginForm"
-import { ToastContainer } from "./components/ToastContainer"
-import { useToast } from "./hooks/useToast"
-import { theme } from "./theme"
-import type { Blog } from "./types"
-import { useUser } from "./hooks/useUser";
+import HomePage from "./pages/HomePage"
+import CreateBlogPage from "./pages/CreateBlogPage"
+import EditBlogPage from "./pages/EditBlogPage"
+import PublishedBlogsPage from "./pages/PublishedBlogsPage"
+import DraftBlogsPage from "./pages/DraftBlogsPage"
+import Layout from "./components/Layout.tsx"
+import {isVerify} from "./api/authApi.ts";
+
 function App() {
-    // const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false)
-    // const [Loading, setLoading] = useState<boolean>(true)
-    const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null)
-    const { showToast } = useToast()
-    const { user, isAuthenticated ,setUser,setIsAuthenticated,setLoading,Loading } = useUser();
+    const {setUser,isAuthenticated, setIsAuthenticated, setLoading, Loading} = useUser()
 
     useEffect(() => {
-        // Check if user is logged in
-        const token = localStorage.getItem("token")
-        if (token) {
+        fetchUser()
+    }, [setIsAuthenticated, setLoading])
+
+    const fetchUser = async () => {
+        setLoading(true)
+        try {
+            const token = localStorage.getItem("token")
+            if (!token){
+                setUser(null)
+                setIsAuthenticated(false)
+                setLoading(false)
+                localStorage.removeItem("token")
+                return
+            }
+            const raw = await isVerify(token)
+            setUser({ ...raw, id: raw._id })
             setIsAuthenticated(true)
+        } catch (err) {
+            console.error("Failed to fetch user:", err)
+            localStorage.removeItem("token")
+            setIsAuthenticated(false)
+        } finally {
+            setLoading(false)
         }
-        setLoading(false)
-    }, [])
-
-    const handleLogout = () => {
-        localStorage.removeItem("token")
-        setIsAuthenticated(false)
-        setUser(null)
-        showToast("Logged out successfully", "success")
-    }
-
-    const handleEditBlog = (blog: Blog) => {
-        setSelectedBlog(blog)
-    }
-
-    const handleNewBlog = () => {
-        setSelectedBlog(null)
     }
 
     if (Loading) {
         return (
-            <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-                <CircularProgress />
+            <Box sx={{display: "flex", justifyContent: "center", alignItems: "center", height: "100vh"}}>
+                <CircularProgress/>
             </Box>
         )
     }
 
     return (
-        <ThemeProvider theme={theme}>
-            <Container maxWidth="lg">
-                <Box sx={{ my: 4 }}>
-                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
-                        <Typography variant="h4" component="h1" gutterBottom>
-                            Blog Editor
-                        </Typography>
-                        <Typography variant="h4" component="h1" gutterBottom>
-                            {user?.email}
-                        </Typography>
-                        {isAuthenticated && (
-                            <Button variant="outlined" color="primary" onClick={handleLogout}>
-                                Logout
-                            </Button>
-                        )}
-                    </Box>
 
-                    {!isAuthenticated ? (
-                        <LoginForm onLoginSuccess={() => setIsAuthenticated(true)} />
-                    ) : (
-                        <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 4 }}>
-                            <Box sx={{ flex: 1 }}>
-                                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                                    <Typography variant="h6" component="h2">
-                                        {selectedBlog ? "Edit Blog" : "New Blog"}
-                                    </Typography>
-                                    {selectedBlog && (
-                                        <Button variant="contained" color="primary" onClick={handleNewBlog}>
-                                            New Blog
-                                        </Button>
-                                    )}
-                                </Box>
-                                <BlogEditor blog={selectedBlog} />
-                            </Box>
-                            <Box sx={{ flex: 1 }}>
-                                <BlogList onEditBlog={handleEditBlog} />
-                            </Box>
-                        </Box>
-                    )}
-                </Box>
-                <ToastContainer />
-            </Container>
-        </ThemeProvider>
+        <>
+
+            {isAuthenticated ? (
+                <>
+
+
+                    <Routes>
+                        <Route path="/" element={<Layout/>}>
+                            <Route index element={<HomePage/>}/>
+                            <Route path="create" element={<CreateBlogPage/>}/>
+                            <Route path="blog/:id" element={<EditBlogPage/>}/>
+                            <Route path="published" element={<PublishedBlogsPage/>}/>
+                            <Route path="drafts" element={<DraftBlogsPage/>}/>
+                        </Route>
+                        <Route path="*" element={<Navigate to="/" replace/>}/>
+                    </Routes>
+
+
+                    <ToastContainer/>
+
+                </>
+            ) : (
+                <LoginForm onLoginSuccess={() => setIsAuthenticated(true)}/>
+            )}
+
+        </>
+
     )
 }
 

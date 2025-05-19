@@ -2,12 +2,22 @@ import type { Response } from 'express';
 import Blog from '../../../models/blog.model';
 import type { AuthRequest } from '../../../handlers/type';
 
-export const getBlogs = async (req: AuthRequest, res: Response) => {
+export const getUserBlogs = async (req: AuthRequest, res: Response) => {
     try {
         const userId = req.userId;
 
         const blogs = await Blog.find({ userId }).sort({ updatedAt: -1 });
 
+        res.status(200).json(blogs);
+    } catch (error) {
+        console.error('Get blogs error:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+export const getAllPublicBlogs = async (req: AuthRequest, res: Response) => {
+    try {
+        const blogs = await Blog.find({ status: 'published' }).sort({ updatedAt: -1 });
         res.status(200).json(blogs);
     } catch (error) {
         console.error('Get blogs error:', error);

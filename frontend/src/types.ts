@@ -1,6 +1,6 @@
 export interface Blog {
     _id: string
-    author: string
+    userId: string
     title: string
     content: string
     tags: string[]

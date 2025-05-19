@@ -12,7 +12,6 @@ export async function authFetch(url: string, options: RequestInit = {}) {
     if (!token) {
         throw new Error("Authentication required")
     }
-     console.log("Token ",token)
     const headers = {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`,

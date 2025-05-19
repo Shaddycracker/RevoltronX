@@ -87,7 +87,7 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
             const data = await register({ name, email, password })
             localStorage.setItem("token", data.token)
             showToast("Registered successfully", "success")
-            onLoginSuccess()
+            setTabValue(1)
         } catch (error) {
             showToast("Registration failed", "error")
             console.error("Registration error:", error)
@@ -97,7 +97,7 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
     }
 
     return (
-        <Paper elevation={3} sx={{ maxWidth: 500, mx: "auto", mt: 4 }}>
+        <Paper elevation={3} sx={{ maxWidth: 500, mx: "auto", mt: 8 }}>
             <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
                 <Tabs value={tabValue} onChange={handleTabChange} aria-label="auth tabs">
                     <Tab label="Login" />
