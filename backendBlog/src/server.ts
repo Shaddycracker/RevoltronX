@@ -26,7 +26,13 @@ import BlogRoutes from './routes/blog.routes';
 app.use('/api/auth', AuthRoutes);
 app.use('/api/blog', BlogRoutes);
 
+(async () => {
+    try {
+        await mongooseConnect();
+    } catch (error) {
+        console.error('Failed to connect to MongoDB', error);
+    }
+})();
 app.listen(port, async () => {
-    await mongooseConnect();
     console.log(`server started at ${port}`);
 });
